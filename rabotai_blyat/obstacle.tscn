@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://co75m6km76k4r"]
+
+[node name="obstacle" type="StaticBody2D"]

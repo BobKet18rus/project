@@ -1,0 +1,67 @@
+[gd_scene load_steps=6 format=3 uid="uid://cpq4gij1tp6fs"]
+
+[ext_resource type="Texture2D" uid="uid://dtcii1bhsg28p" path="res://icon.png" id="2_rqdkt"]
+[ext_resource type="Script" path="res://Scripts/GG.gd" id="23"]
+
+[sub_resource type="CanvasItemMaterial" id="8"]
+light_mode = 1
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3pecf"]
+radius = 48.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nsu3j"]
+size = Vector2(80, 40)
+
+[node name="GG" type="CharacterBody2D"]
+floor_stop_on_slope = false
+floor_snap_length = 13.0
+script = ExtResource("23")
+
+[node name="camera" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 20.0
+
+[node name="state" type="Label" parent="."]
+material = SubResource("8")
+offset_left = 272.0
+offset_top = -448.0
+offset_right = 507.0
+offset_bottom = -390.0
+rotation = 6.7734
+scale = Vector2(5, 5)
+
+[node name="right_ray" type="RayCast2D" parent="."]
+self_modulate = Color(0.00784314, 1, 0, 1)
+position = Vector2(0, 48)
+target_position = Vector2(88, 0)
+
+[node name="left_ray" type="RayCast2D" parent="."]
+self_modulate = Color(0.172549, 1, 0, 1)
+position = Vector2(0, 48)
+target_position = Vector2(-88, 0)
+
+[node name="jump_ray" type="RayCast2D" parent="."]
+target_position = Vector2(0, 88)
+
+[node name="sprite" type="Sprite2D" parent="."]
+position = Vector2(0, 3.8147e-06)
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_rqdkt")
+offset = Vector2(-3.17891e-06, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_3pecf")
+debug_color = Color(0.866667, 0, 0.854902, 0.419608)
+
+[node name="jump_timer" type="Timer" parent="."]
+one_shot = true
+
+[node name="areas" type="Node2D" parent="."]
+
+[node name="ring_area" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="zone" type="CollisionShape2D" parent="ring_area"]
+position = Vector2(0, -76)
+shape = SubResource("RectangleShape2D_nsu3j")

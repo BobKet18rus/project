@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3 uid="uid://4g7mrhhgabwb"]
+
+[ext_resource type="Script" path="res://Scripts/h_rope.gd" id="1_sew4j"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_qpr38"]
+a = Vector2(640, 0)
+b = Vector2(648, 0)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_kgkpd"]
+a = Vector2(120, 0)
+b = Vector2(128, 0)
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_sew4j")
+
+[node name="ray" type="RayCast2D" parent="."]
+target_position = Vector2(640, 0)
+collision_mask = 2
+collide_with_areas = true
+collide_with_bodies = false
+
+[node name="cooldown" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="border_right" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="border_right"]
+position = Vector2(8, 0)
+shape = SubResource("SegmentShape2D_qpr38")
+
+[node name="border_left" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="border_left"]
+shape = SubResource("SegmentShape2D_kgkpd")

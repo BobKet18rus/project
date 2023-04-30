@@ -10,38 +10,48 @@ light_mode = 1
 radius = 48.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nsu3j"]
-size = Vector2(80, 40)
+size = Vector2(85.7143, 40)
 
 [node name="GG" type="CharacterBody2D"]
-floor_stop_on_slope = false
+floor_constant_speed = true
 floor_snap_length = 13.0
 script = ExtResource("23")
 
+[node name="timers" type="Node2D" parent="."]
+
+[node name="jump_timer" type="Timer" parent="timers"]
+one_shot = true
+
+[node name="ring_timer" type="Timer" parent="timers"]
+wait_time = 0.15
+one_shot = true
+
 [node name="camera" type="Camera2D" parent="."]
+position = Vector2(0, -48)
 position_smoothing_enabled = true
-position_smoothing_speed = 20.0
+position_smoothing_speed = 25.0
 
 [node name="state" type="Label" parent="."]
 material = SubResource("8")
-offset_left = 272.0
-offset_top = -448.0
-offset_right = 507.0
-offset_bottom = -390.0
+offset_left = 176.0
+offset_top = -344.0
+offset_right = 305.0
+offset_bottom = -315.0
 rotation = 6.7734
 scale = Vector2(5, 5)
 
 [node name="right_ray" type="RayCast2D" parent="."]
 self_modulate = Color(0.00784314, 1, 0, 1)
 position = Vector2(0, 48)
-target_position = Vector2(88, 0)
+target_position = Vector2(56, 0)
 
 [node name="left_ray" type="RayCast2D" parent="."]
 self_modulate = Color(0.172549, 1, 0, 1)
 position = Vector2(0, 48)
-target_position = Vector2(-88, 0)
+target_position = Vector2(-56, 0)
 
-[node name="jump_ray" type="RayCast2D" parent="."]
-target_position = Vector2(0, 88)
+[node name="down_ray" type="RayCast2D" parent="."]
+target_position = Vector2(0, 80)
 
 [node name="sprite" type="Sprite2D" parent="."]
 position = Vector2(0, 3.8147e-06)
@@ -53,15 +63,19 @@ offset = Vector2(-3.17891e-06, 0)
 shape = SubResource("CircleShape2D_3pecf")
 debug_color = Color(0.866667, 0, 0.854902, 0.419608)
 
-[node name="jump_timer" type="Timer" parent="."]
-one_shot = true
-
 [node name="areas" type="Node2D" parent="."]
 
 [node name="ring_area" type="Area2D" parent="."]
 collision_layer = 2
 collision_mask = 2
 
-[node name="zone" type="CollisionShape2D" parent="ring_area"]
-position = Vector2(0, -76)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ring_area"]
+position = Vector2(-2.14577e-06, -76)
+scale = Vector2(1.12, 1)
 shape = SubResource("RectangleShape2D_nsu3j")
+
+[node name="wall_ray_right" type="RayCast2D" parent="."]
+target_position = Vector2(80, 0)
+
+[node name="wall_ray_left" type="RayCast2D" parent="."]
+target_position = Vector2(-80, 0)

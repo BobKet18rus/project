@@ -1,178 +1,190 @@
 extends CharacterBody2D
-class_name Player
 
-@export var speed:float = 1000
-@export var friction = 0.2	#Трение
-@export var acceleration = 0.2	#Ускорение
-@export var gravity = 100
-@export var jump_force = 1000
-var new_value
+var state:int = sm.FALL
 
-#var vel = Vector2.ZERO
+@export var speed:int = 500
+@export var gravity:int = 100
+@export var jump_force:int = -900
+@export var acc:float = 0.2
+@export var fr:float = 0.2
 
-var state = "IS_IDLE"
-#states: IS_IN_AIR, IS_IDLE, IS_IN_AIR_MOVING, IS_MOVING, IS_ON_RING
+@onready var jump_timer = $timers/jump_timer
+@onready var ring_timer = $timers/ring_timer
 
+var dir:int = 0
+var jump_possibility:bool = false
+var current_checkpoint_position:Vector2
 
-var direction_x = 0
-var direction_y = 0
-var anim = ""
 var death_counter:int = 0
-var jump_possibility:bool
-var wall_jump:bool
+var fast_fall:bool
 
-#-----------------------------------------------------------------
-func get_sprite():
-	return $sprite
-	
-func get_direction(y_or_x):
-	if y_or_x == "x":
-		return direction_x
-	else:
-		return direction_y
-		
-func get_pos():
-	return position
-func get_ring_area():
-	return $ring_area
-	
-func get_state():
-	return state
-func set_state(new_state):
-	state = new_state
-func get_jump_timer():
-	return $jump_timer
+func die():
+	velocity = Vector2.ZERO
+	death_counter += 1
+	self.position = current_checkpoint_position
+	self.state = sm.FALL
+
+func time(s):#ВЫЗЫВАТЬ AWAIT
+	var timer = get_tree().create_timer(s)
+	return timer.timeout
 	
 func state_machine():
-	if (Input.is_action_pressed("left") or Input.is_action_pressed("right")) and is_on_floor():
-		state = "IS_MOVING"
-	else:
-		if is_on_floor():
-			state = "IS_IDLE"
-		else:
-			if Input.is_action_pressed("left") or Input.is_action_pressed("right"):
-				state = "IS_IN_AIR_MOVING"
+	if state != sm.FALL:
+		fast_fall = false
+	match state:
+		sm.IDLE:
+			jump_possibility = true
+			idle(1)
+			if Input.is_action_pressed("left") and Input.is_action_pressed("right"):
+				state = sm.IDLE
+			elif Input.is_action_pressed("left") or Input.is_action_pressed("right"):
+				state = sm.MOVE
+			if not(is_on_floor()):
+				state = sm.FALL
+			jump(1)
+			jump_timer_starting()
+		sm.MOVE:
+			jump_possibility = true
+			move(1,1)
+			if not(is_on_floor()):
+				state = sm.FALL
+			jump(1)
+			jump_timer_starting()
+		sm.FALL:
+			jump_possibility = false
+			if Input.is_action_just_pressed("down"):
+				fast_fall = true
+				
+			if fast_fall == true:
+				gravitation(2)
+				velocity.x = lerpf(velocity.x, 0.0, 0.5)
 			else:
-				state = "IS_IN_AIR"
-#------------------------------------------------------------------
+				gravitation(1)
+				move(1, 0.2)
+				
+			if is_on_floor():
+				state = sm.IDLE
+			elif is_on_wall():
+				velocity = Vector2.ZERO
+				state = sm.WALL
+				
+		sm.JUMP:
+			if jump_timer.is_stopped() or is_on_ceiling() or Input.is_action_just_released("jump"):
+				state = sm.FALL
+			else:
+				jump_possibility = true
+				
+			if Input.is_action_just_pressed("down"):
+				state = sm.FALL
+				
+			if is_on_wall():
+				velocity = Vector2.ZERO
+				state = sm.WALL
+			move(1, 0.2)
+		sm.RING:
+			jump_possibility = true
+			if Input.is_action_just_pressed("down"):
+				state = sm.FALL
+				ring_timer.start()
+			ring_timer_starting()
+			jump(1)
+			jump_timer_starting()
+		sm.H_ROPE:
+			jump_possibility = true
+			if Input.is_action_just_pressed("down") or is_on_ceiling():
+				state = sm.FALL
+				ring_timer.start()
+			move(0.8, 1)
+			ring_timer_starting()
+			jump(1)
+			jump_timer_starting()
+		sm.D_ROPE:
+			pass
+		sm.V_ROPE:
+			pass
+		sm.LEDGE:
+			pass
+		sm.WALL:
+			jump_possibility = true
+			if ($left_ray.is_colliding() or $right_ray.is_colliding()) and not(Input.is_action_pressed("down")):
+				gravitation(0.1)
+			else:
+				gravitation(1)
+			jump(0.8)
+			wall_jump(10)
+			jump_timer_starting()
+			if is_on_floor():
+				state = sm.IDLE
+			elif not(is_on_wall()):
+				state = sm.FALL
+	
+func wall_jump(s_mult):
+	if is_on_wall():
+		if Input.is_action_just_pressed("jump"):
+			if $left_ray.is_colliding():
+				velocity.x = lerpf(velocity.x, speed*s_mult, 0.1)
+			else:
+				velocity.x = lerpf(velocity.x, -speed*s_mult, 0.1)
+func label():
+	$state.text = str(state)+","+str(velocity)
+	
+func jump_timer_starting():
+	if Input.is_action_just_pressed("jump"):
+		jump_timer.start(0.3)
+
+func ring_timer_starting():
+	if Input.is_action_just_pressed("jump"):
+		ring_timer.start()
+func jump(force_mult:float):
+	if Input.is_action_just_pressed("jump") and (is_on_floor() or jump_possibility == true):
+		jump_timer_starting()
+		state = sm.JUMP
+		velocity.y += jump_force*force_mult
 		
-func is_on_left_wall(only):
-	if only == null:
-		if is_on_wall() and $right_ray.is_colliding():
-			return true
-		else:
-			return false
+func move(s, a):
+	if is_on_floor() and (Input.is_action_pressed("left") and Input.is_action_pressed("right")):
+		state = sm.IDLE
+	elif Input.is_action_pressed("left") and Input.is_action_pressed("right"):
+		idle(1)
+	elif state == sm.H_ROPE and not(Input.is_action_pressed("left") or Input.is_action_pressed("right")):
+		idle(1)
+	elif Input.is_action_pressed('left'):
+		velocity.x = lerpf(velocity.x, -speed*s, acc*a)
+	elif Input.is_action_pressed("right"):
+		velocity.x = lerpf(velocity.x, speed*s, acc*a)
 	else:
-		if is_on_wall() and $right_ray.is_colliding() and not(is_on_floor()):
-			return true
-		else:
-			return false
-		
-func is_on_right_wall(only):
-	if only == null:
-		if is_on_wall() and $left_ray.is_colliding():
-			return true
-		else:
-			return false
-	else:
-		if is_on_wall() and $left_ray.is_colliding() and not(is_on_floor()):
-			return true
-		else:
-			return false
-			
-func gravitation(grav):
-	if state != "IS_ON_RING" and state != "IS_ON_H_ROPE":
 		if is_on_floor():
-			velocity.y += 1.5*grav
-		else:
-			velocity.y += grav
-	
-	return velocity.y
+			state = sm.IDLE
 		
-func animate(): #animation
-	pass
 		
-func change(value: int, change_value: int):
-	new_value = value + change_value
-	value = new_value
+func idle(fr_mult):
+	velocity.x = lerpf(velocity.x, 0.0, fr*fr_mult)
 	
-func label(cur_state):
-	$state.text = ":-( "+str(cur_state)+","+state
-		
-func spit_projectile_spawn():
-	var spit_projectile = load("res://Scenes/projectiles/Projectile.tscn")
-	var bullet = spit_projectile.instantiate()
-	get_parent().add_child(bullet)
+func gravitation(grav_mult:float):
+	velocity.y += gravity*grav_mult
 	
-#---------------------------------------------------------------------------------------------------
 func _ready():
 	pass
 	
-func _process(_delta):	#графика
-	animate()
-	label(death_counter)
-	
-func _physics_process(delta):	#физика
-	state_machine()
-	if state == "IS_ON_H_ROPE":
-		speed = 500
-		acceleration = 0.7
-		friction = 0.7
-	else:
-		speed = 1000
-		acceleration = 0.2
-		friction = 0.2
-		
-#movement==========================================================================
-	direction_x = Input.get_axis("left", "right")
-	direction_y = Input.get_axis("jump", "down")
-	
-	if not(is_on_floor()):
-		if direction_x != 0:
-			velocity.x = lerp(velocity.x, direction_x * 1.5 * speed, acceleration/5)
-		else:
-			velocity.x = lerp(velocity.x, 0.0, friction/5)
-	else:
-		if direction_x != 0:
-			velocity.x = lerp(velocity.x, direction_x * speed, acceleration)
-		else:
-			velocity.x = lerp(velocity.x, 0.0, friction)
-				
-	if direction_y < 0:
-		if jump_possibility == true:
-			velocity.y = -jump_force
-
-	if wall_jump == true and Input.is_action_just_pressed("jump"):
-		if $right_ray.is_colliding() and not(is_on_floor()):
-			velocity = Vector2(lerp(velocity.x, -speed, 0.8), -jump_force*1.6)
-		elif $left_ray.is_colliding() and not(is_on_floor()):
-			velocity = Vector2(lerp(velocity.x, speed, 0.8), -jump_force*1.6)
-#=======================================================================================
-	
-	if Input.is_action_just_pressed("jump") and (is_on_floor() or state == "IS_ON_H_ROPE" or state == "IS_ON_RING"):
-		jump_possibility = true
-		$jump_timer.start(0.3)
-	elif Input.is_action_just_released("jump") or $jump_timer.time_left == 0 or is_on_ceiling():
-		jump_possibility = false
-	
+func _process(_delta):
+	label()
 	if Input.is_action_just_pressed("t1"):
-		get_parent().death()
-		
-	if $right_ray.is_colliding() or $left_ray.is_colliding():
-		wall_jump = true
+		die()
+
+	if is_on_floor():
+		if $down_ray.is_colliding():
+			$sprite.rotation = lerp_angle($sprite.rotation, $down_ray.target_position.angle_to(-$down_ray.get_collision_normal()), 0.5)
+		elif $left_ray.is_colliding():
+			$sprite.rotation = lerp_angle($sprite.rotation, Vector2(1, 2).angle_to(-$down_ray.get_collision_normal()+Vector2(0, 48)), 0.3)
+		elif $right_ray.is_colliding():
+			$sprite.rotation = lerp_angle($sprite.rotation, Vector2(-1, 2).angle_to(-$down_ray.get_collision_normal()+Vector2(0, 48)), 0.3)
 	else:
-		wall_jump = false
+		$sprite.rotation = lerp_angle($sprite.rotation, 0.0, 0.1)
 	
-	gravitation(gravity)
+func _physics_process(_delta):
+	state_machine()
 	set_velocity(velocity)
 	set_up_direction(Vector2.UP)
 	move_and_slide()
-		
-	if is_on_floor():
-		if $left_ray.is_colliding():
-			$sprite.rotation = lerp_angle($sprite.rotation, get_floor_angle(), 0.1)
-		else:
-			$sprite.rotation = lerp_angle($sprite.rotation, -get_floor_angle(), 0.1)
-	else:
-		$sprite.rotation = lerp_angle($sprite.rotation, 0.0, 0.1)
-#-------------------------------------------------------------------------------
+
+	

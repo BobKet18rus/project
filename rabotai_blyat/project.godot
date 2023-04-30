@@ -10,10 +10,14 @@ config_version=5
 
 [application]
 
-config/name="rabotai_blyat"
+config/name="rabotai_blyat_origins"
 run/main_scene="res://Scenes/Main_scene.tscn"
 config/features=PackedStringArray("4.0")
 config/icon="res://icon.png"
+
+[autoload]
+
+sm="*res://Scenes/states.tscn"
 
 [debug]
 
@@ -24,10 +28,15 @@ gdscript/warnings/return_value_discarded=false
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode=4
 window/size/initial_position_type=0
 window/size/borderless=true
 window/stretch/mode="viewport"
 window/size/fullscreen=true
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/wiggly_appendage_2d/plugin.cfg")
 
 [gui]
 
@@ -113,6 +122,11 @@ t1={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":49,"key_label":0,"unicode":49,"echo":false,"script":null)
 ]
 }
+t2={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":50,"key_label":0,"unicode":50,"echo":false,"script":null)
+]
+}
 snap={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194309,"key_label":0,"unicode":0,"echo":false,"script":null)
@@ -128,11 +142,11 @@ down={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":1099,"echo":false,"script":null)
 ]
 }
-
-[layer_names]
-
-2d_physics/layer_1="obstacles"
-2d_physics/layer_2="interactive_objects"
+run={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194325,"key_label":0,"unicode":0,"echo":false,"script":null)
+]
+}
 
 [physics]
 
@@ -140,4 +154,5 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
+environment/defaults/default_clear_color=Color(0.301961, 0.301961, 0.301961, 1)
 environment/defaults/default_environment="res://default_env.tres"

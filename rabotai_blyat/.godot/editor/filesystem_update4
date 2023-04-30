@@ -1,0 +1,15 @@
+res://default_env.tres
+res://Scenes/GG.tscn
+res://Scripts/GG.gd
+res://Scenes/Main_scene.tscn
+res://Scenes/states.tscn
+res://Scenes/state_machine.tscn
+res://Scenes/h_rope.tscn
+res://Scenes/ring.tscn
+res://Scenes/spikes.tscn
+res://checkpoint.tscn
+res://Scenes/interactive_objects/ladder.tscn
+res://root.tscn
+res://wiggly_appendage_2d.tscn
+res://Scripts/vine_speed_adding.gd
+res://Scripts/Interactive_objects/Ladder.gd
